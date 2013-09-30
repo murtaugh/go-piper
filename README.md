@@ -1,10 +1,10 @@
 # go-reveal
 
-Turn Reveal presentations into shared events
+Turn [Reveal](https://github.com/hakimel/reveal.js) presentations into shared events
 
 ### Here is what you need to do--not much
 
-Your Reveal presentation will be a web page with the Reveal scripts added at the bottom of the HTML `</body>` tag.
+Your [Reveal](https://github.com/hakimel/reveal.js) presentation will be a web page with the Reveal scripts added at the bottom of the HTML `</body>` tag.
 It should look something like this:
 
 ```HTML
