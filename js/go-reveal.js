@@ -102,6 +102,37 @@ var goreveal = (function() {
     var parser = document.createElement('a');
     parser.href = window.location.toString();
     query.set(parser.search);
+
+    // if the query has changed then reload the page with the new query.
+    if (parser.search) {
+      parser.search += '&' + GO_REVEAL_ID + '=' + roomName;
+    } else {
+      parser.search = '?' + GO_REVEAL_ID + '=' + roomName;
+    }
+
+    // Create Share Button
+    var shareBtn = document.createElement('a');
+    var cssBtn = 'display: block; position: fixed; bottom: 1em; left: 0; z-index: 9999; height: 17px; padding: 9px; font-size: 15px; font-family: sans-serif; font-weight: bold; background: white; border-radius: 0 3px 3px 0; border: 1px solid #ccc; text-decoration: none; color: #15A815;';
+    var cssURL = 'font-weight: regular;';
+
+    shareBtn.href = '#';
+    shareBtn.innerHTML = 'Share';
+    shareBtn.style.cssText = cssBtn;
+
+    var reveal = document.getElementsByClassName(reveal);
+
+    document.body.insertBefore(shareBtn, reveal);
+
+    shareBtn.onmouseenter = function(){
+      this.innerHTML += '<input id="gi-share-button" type="text" value="'+parser.href+'" style="margin: -5px 0 0 15px; padding: 5px; width: 180px;"/>';
+      document.getElementById('gi-share-button').select();
+      this.style.width = '250px';
+    };
+    shareBtn.onmouseleave = function(){
+      this.innerHTML = 'Share';
+      this.style.width = 'auto';
+    };
+
   }
 
   function connectToPlatform() {
