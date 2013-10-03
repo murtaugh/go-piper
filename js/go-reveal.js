@@ -28,6 +28,32 @@ var goreveal = (function() {
     head.appendChild(script);
   }
 
+  function _handleDocumentKeyDown(evt) {
+    // Check for element that has focus
+    var activeElement = document.activeElement;
+    var hasFocus = !!(document.activeElement && (
+      document.activeElement.type ||
+      document.activeElement.href ||
+      document.activeElement.contentEditable !== 'inherit'
+    ));
+
+    if (!hasFocus && event.keyCode === 71 && event.ctrlKey) {
+      var parser = document.createElement('a');
+      parser.href = window.location.toString();
+
+      // if the query has changed then reload the page with the new query.
+      if (parser.search) {
+        parser.search += '&' + GO_REVEAL_ID + '=' + roomName;
+      } else {
+        parser.search = '?' + GO_REVEAL_ID + '=' + roomName;
+      }
+
+      alert('Your sharing URL is:\n\n' + parser.href);
+    }
+
+    return false;
+  }
+
   function _handleDisplayEvent(evt) {
     // do not forward the change to be shared if there is nowhere to share the
     // value to or if this event is triggered from our response to an update
@@ -44,6 +70,8 @@ var goreveal = (function() {
     Reveal.addEventListener('slidechanged', _handleDisplayEvent);
     Reveal.addEventListener('fragmentshown', _handleDisplayEvent);
     Reveal.addEventListener('fragmenthidden', _handleDisplayEvent);
+
+    document.addEventListener('keydown', _handleDocumentKeyDown, false);
   }
 
   function _handleDisplayChanged(value, context) {
