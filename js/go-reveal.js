@@ -1,7 +1,11 @@
 var goreveal = (function() {
+
   var GO_REVEAL_APP_URL = 'https://goinstant.net/elgordo/GoReveal';
   var PLATFORM_URL = 'https://cdn.goinstant.net/v1/platform.min.js';
   var ORIGIN_GO_REVEAL = 'goreveal';
+  var GO_REVEAL_ID = 'go_reveal_room';
+  var QUERY_REGEX = new RegExp('\\?(.*)\\b' + GO_REVEAL_ID + '=([^&#\/]*)(.*)');
+
 
   var platform;
   var roomName;
@@ -15,7 +19,7 @@ var goreveal = (function() {
     var head = document.getElementsByTagName('head')[0];
     var script = document.createElement('script');
     script.type = 'text/javascript';
-    script.src = 'https://cdn.goinstant.net/v1/platform.min.js';
+    script.src = url;
 
     script.onreadystatechange = callback;
     script.onload = callback;
@@ -72,27 +76,58 @@ var goreveal = (function() {
     });
   }
 
-  function setRoomId() {
-    var url = window.location.toString();
-    var roomRegex = /\?.*\broom=([^&#\/]*)/;
-    var hasRoom = roomRegex.exec(url);
-
-    var roomId = hasRoom && hasRoom[1];
-    if (roomId) {
-      roomName = 'presentation' + roomId;
+  function setRoomName() {
+    // if we have the go-reveal room in sessionStorage then just connect to
+    // the room and continue with the initialization.
+    roomName = sessionStorage.getItem(GO_REVEAL_ID);
+    if (roomName) {
       return true;
     }
 
-    var id = Math.floor(Math.random() * Math.pow(2, 32));
-    var hashParts = url.split('#');
-    var after = hashParts[1] ? '#' + hashParts[1] : '';
-    window.location = hashParts[0] + '?room=' + id + after;
+    // if we do not have the name in storage then check to see if the window
+    // location contains a query string containing the id of the room. 
 
-    return false;
+    // creating an anchor tag and assigning the href to the window location
+    // will automatically parse out the URL components ... sweet.
+    var parser = document.createElement('a');
+    parser.href = window.location.toString();
+
+    var hasRoom = QUERY_REGEX.exec(parser.search);
+    var roomId = hasRoom && hasRoom[2];
+    if (roomId) {
+      roomName = roomId.toString();
+      // add the cookie to the document.
+      sessionStorage.setItem(GO_REVEAL_ID, roomName);
+
+      // regenerate the URI without the go-reveal query parameter and reload
+      // the page with the new URI.
+      var beforeRoom = hasRoom[1];
+      if (beforeRoom[beforeRoom.length - 1] === '&') {
+        beforeRoom = beforeRoom.slice(0, beforeRoom.lengh - 1);
+      }
+      var searchStr = beforeRoom + hasRoom[3];
+      if (searchStr.length > 0) {
+        searchStr = '?' + searchStr;
+      }
+
+      parser.search = searchStr;
+
+      // set the new location and discontinue the initialization.
+      window.location = parser.href;
+      return false;
+    }
+
+    // there is no room to join for this presentation so simply create a new
+    // room and set the cookie in case of future refreshes.
+    var id = Math.floor(Math.random() * Math.pow(2, 32));
+    roomName = id.toString();
+    sessionStorage.setItem(GO_REVEAL_ID, roomName);
+
+    return true;
   }
 
-  function initialize(roomId) {
-    if (setRoomId()) {
+  function initialize() {
+    if (setRoomName()) {
       addListeners();
 
       connectToPlatform();
