@@ -102,6 +102,30 @@ var goreveal = (function() {
     var parser = document.createElement('a');
     parser.href = window.location.toString();
     query.set(parser.search);
+
+
+    // Create Share Button
+    var shareBtn = document.createElement('a');
+    var shareContent = 'Share';
+    var cssBtn = 'display: block ;position: fixed; bottom: 1em; left: 0; z-index: 9999; padding: 9px; font-size: 15px; font-family: sans-serif; font-weight: bold; background: white; border-radius: 0 3px 3px 0; border: 1px solid #ccc; text-decoration: none; color: #15A815;';
+    var cssURL = 'font-weight: regular;';
+
+    shareBtn.href = '#';
+    shareBtn.innerHTML = shareContent;
+    shareBtn.style.cssText = cssBtn;
+    parser.style.cssText = cssURL;
+
+    var reveal = document.getElementsByClassName(reveal);
+
+    document.body.insertBefore(shareBtn, reveal);
+
+    shareBtn.onmouseover = function(){
+      this.innerHTML = shareContent + ' ' +parser;
+    };
+    shareBtn.onmouseout = function(){
+      this.innerHTML = shareContent;
+    };
+
   }
 
   function connectToPlatform() {
