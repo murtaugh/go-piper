@@ -11,7 +11,7 @@ var goreveal = (function() {
   var roomName;
   var presentation;
   var slide;
-  var fragment;
+  var query;
 
 
   function loadScript(url, callback) {
@@ -50,9 +50,30 @@ var goreveal = (function() {
     Reveal.slide(value.h, value.v, value.f, ORIGIN_GO_REVEAL);
   }
 
+  function _handleQueryChanged(value, context) {
+    var parser = document.createElement('a');
+    parser.href = window.location.toString();
+
+    // if the query has changed then reload the page with the new query.
+    if (value !== parser.search) {
+      parser.search = value;
+      window.location = parser.href;
+    }
+  }
+
   function initializeSharing() {
     slide = presentation.key('slide');
     slide.on('set', _handleDisplayChanged);
+
+    query = presentation.key('query');
+    query.on('set', _handleQueryChanged);
+
+    // We are interested in knowing if there is a new query on the URL when the
+    // slide show is loaded. This detects the use of the query parameter in the
+    // default slide deck to change the transitions and themes.
+    var parser = document.createElement('a');
+    parser.href = window.location.toString();
+    query.set(parser.search);
   }
 
   function connectToPlatform() {
@@ -85,7 +106,7 @@ var goreveal = (function() {
     }
 
     // if we do not have the name in storage then check to see if the window
-    // location contains a query string containing the id of the room. 
+    // location contains a query string containing the id of the room.
 
     // creating an anchor tag and assigning the href to the window location
     // will automatically parse out the URL components ... sweet.
