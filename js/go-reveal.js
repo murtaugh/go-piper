@@ -103,27 +103,34 @@ var goreveal = (function() {
     parser.href = window.location.toString();
     query.set(parser.search);
 
+    // if the query has changed then reload the page with the new query.
+    if (parser.search) {
+      parser.search += '&' + GO_REVEAL_ID + '=' + roomName;
+    } else {
+      parser.search = '?' + GO_REVEAL_ID + '=' + roomName;
+    }
 
     // Create Share Button
     var shareBtn = document.createElement('a');
-    var shareContent = 'Share';
-    var cssBtn = 'display: block ;position: fixed; bottom: 1em; left: 0; z-index: 9999; padding: 9px; font-size: 15px; font-family: sans-serif; font-weight: bold; background: white; border-radius: 0 3px 3px 0; border: 1px solid #ccc; text-decoration: none; color: #15A815;';
+    var cssBtn = 'display: block; position: fixed; bottom: 1em; left: 0; z-index: 9999; height: 17px; padding: 9px; font-size: 15px; font-family: sans-serif; font-weight: bold; background: white; border-radius: 0 3px 3px 0; border: 1px solid #ccc; text-decoration: none; color: #15A815;';
     var cssURL = 'font-weight: regular;';
 
     shareBtn.href = '#';
-    shareBtn.innerHTML = shareContent;
+    shareBtn.innerHTML = 'Share';
     shareBtn.style.cssText = cssBtn;
-    parser.style.cssText = cssURL;
 
     var reveal = document.getElementsByClassName(reveal);
 
     document.body.insertBefore(shareBtn, reveal);
 
-    shareBtn.onmouseover = function(){
-      this.innerHTML = shareContent + ' ' +parser;
+    shareBtn.onmouseenter = function(){
+      this.innerHTML += '<input id="gi-share-button" type="text" value="'+parser.href+'" style="margin: -5px 0 0 15px; padding: 5px; width: 180px;"/>';
+      document.getElementById('gi-share-button').select();
+      this.style.width = '250px';
     };
-    shareBtn.onmouseout = function(){
-      this.innerHTML = shareContent;
+    shareBtn.onmouseleave = function(){
+      this.innerHTML = 'Share';
+      this.style.width = 'auto';
     };
 
   }
