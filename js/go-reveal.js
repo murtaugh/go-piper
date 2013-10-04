@@ -3,12 +3,18 @@ var goreveal = (function() {
   var ASYNC_URL = 'http://cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min.js';
   var GO_REVEAL_APP = 'https://goinstant.net/elgordo/GoReveal';
 
-  var RESOURCES = [
+  var SCRIPT_URLS = [
     ['https://cdn.goinstant.net/v1/platform.min.js', 'goinstant'],  //PLATFORM
     ['https://cdn.goinstant.net/widgets/user-list/latest/user-list.min.js', 'goinstant.widgets.UserList'],  // USER_LIST
     ['https://cdn.goinstant.net/widgets/click-indicator/latest/click-indicator.min.js', 'goinstant.widgets.ClickIndicator'],  // CLICK_INDICATOR
     ['https://cdn.goinstant.net/widgets/user-colors/latest/user-colors.min.js', 'goinstant.widgets.UserColors'],  // USER_COLORS
     ['https://cdn.goinstant.net/widgets/notifications/latest/notifications.min.js', 'goinstant.widgets.Notifications']  // NOTIFICATIONS
+  ];
+
+  var CSS_URLS = [
+    'https://cdn.goinstant.net/widgets/user-list/latest/user-list.css',
+    'https://cdn.goinstant.net/widgets/click-indicator/latest/click-indicator.css',
+    'https://cdn.goinstant.net/widgets/notifications/latest/notifications.css'
   ];
 
   var ORIGIN_GO_REVEAL = 'goreveal';
@@ -281,42 +287,60 @@ var goreveal = (function() {
   }
 
   function loadResources(cb) {
-    function loadScript(url, testProperty, loaded) {
+    function _loadResource(type, url, testProperty, loaded) {
       // if the object exists then just return, no need to reload.
       if (window[testProperty]) {
         return loaded();
       }
 
       // Adding the script tag to the head as suggested before
-      var head = document.getElementsByTagName('head')[0];
-      var script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = url;
+      var res = document.createElement(type);
+      if (type === 'script') {
+        res.src = url;
+        res.type = 'text/javascript';
+      } else {
+        res.rel = 'stylesheet';
+        res.type = 'text/css';
+        res.href = url;
+      }
 
       // callbacks for loaded notification
       function _handleLoadEvent() {
         return loaded();
       }
-
-      script.onreadystatechange = _handleLoadEvent;
-      script.onload = _handleLoadEvent;
+      res.onreadystatechange = _handleLoadEvent;
+      res.onload = _handleLoadEvent;
 
       // Fire the loading
-      head.appendChild(script);
+      var head = document.getElementsByTagName('head')[0];
+      head.appendChild(res);
     }
 
     // get async if it does not already exist.
-    loadScript(ASYNC_URL, 'async', function() {
+    _loadResource('script', ASYNC_URL, 'async', function() {
 
       // Load all the resources in the array. Create the array of resoures
       // to load and then load each.
       var loadRequests = [];
-      async.each(RESOURCES, function(params, next) {
-        loadRequests.push(loadScript.bind(null, params[0], params[1]));
-        return next();
-      }, function (err) {
-        async.series(loadRequests, cb);
-      });
+      async.series([
+        // add function calls to load all scripts to the load requests array
+        function(next) {
+          async.each(SCRIPT_URLS, function(params, cont) {
+            loadRequests.push(_loadResource.bind(null, 'script', params[0], params[1]));
+            return cont();
+          }, next);
+        },
+
+        // add function calls to load all css to the load requests array
+        function(next) {
+          async.each(CSS_URLS, function(url, cont) {
+            loadRequests.push(_loadResource.bind(null, 'link', url, null));
+            return cont();
+          }, next);
+        },
+
+        async.series.bind(async, loadRequests)
+      ], cb);
     });
   }
 
