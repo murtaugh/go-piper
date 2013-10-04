@@ -131,11 +131,11 @@ var goreveal = (function() {
     addShareButton(parser.href);
   }
 
-  function getUserName(cb) {
+  function getUserName() {
     userName = sessionStorage.getItem(GO_REVEAL_USER_NAME);
     if (userName) {
       alreadyLoaded = true;
-      return cb();
+      return;
     }
 
     userName = prompt('What is your name?', 'Guest');
@@ -144,7 +144,7 @@ var goreveal = (function() {
     }
     sessionStorage.setItem(GO_REVEAL_USER_NAME, userName);
 
-    return cb();
+    return;
   }
 
   function connectToPlatform(cb) {
@@ -152,9 +152,6 @@ var goreveal = (function() {
     var notifications;
 
     async.series([
-      // get the display name from the user.
-      getUserName,
-
       // connect to GoInstant platform
       platform.connect.bind(platform),
 
@@ -348,6 +345,9 @@ var goreveal = (function() {
     // we might have to reload if the we are passed a room name so do not
     // load the rest of the resources if the page is being reloaded.
     if (setRoomName()) {
+      // get the display name from the user.
+      getUserName();
+
       loadResources(function() {
 
         // set up listeners on the presentation
