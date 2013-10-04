@@ -39,13 +39,13 @@ All you have to do is add in the go-reveal script and you will now be able to co
 
 ### Try it out
 
-If you want to see how the sample Reveal.js presentation works with go-reveal?
-[Try it out](http://gordienoye.github.io/go-reveal/) and see how you can share presenting between multiple browsers.
+Want to see how a sample Reveal.js presentation works with go-reveal?
+[**Try it out**](http://gordienoye.github.io/go-reveal/) and see how you can share a presentation between multiple browsers.
 
 ### Collaborating is now easy
 
 go-reveal automatically makes your presentation multi-user. If you want to give another person access to your
-presentation all you need to do is to share a special URL. If you move your mouse over the *Share* pop-out in the lower
+presentation all you need to do is to share a special URL. If you move your mouse over the `Share` pop-out in the lower
 left of the presentation you can copy the given URL and share it around.
 
 Once you share this URL with somebody, that person can control your presentation and do the same things that you can do.
