@@ -40,7 +40,7 @@ All you have to do is add in the go-reveal script and you will now be able to co
 ### Try it out
 
 Want to see how a sample Reveal.js presentation works with go-reveal?
-[**Try it out**](http://gordienoye.github.io/go-reveal/) and see how you can share presenting between multiple browsers.
+[**Try it out**](http://gordienoye.github.io/go-reveal/) and see how you can share a presentation between multiple browsers.
 
 ### Collaborating is now easy
 
