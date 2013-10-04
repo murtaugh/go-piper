@@ -55,5 +55,5 @@ Go wild.
 
 ### go-reveal is powered by GoInstant
 
-<a href="http://goinstant.com">;GoInstant</a>; is an API for integrating realtime, multi-user functionality into your app. You can check it out and sign up for free.
+<a href="http://goinstant.com">GoInstant</a> is an API for integrating realtime, multi-user functionality into your app. You can check it out and sign up for free.
 
