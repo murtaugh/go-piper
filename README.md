@@ -1,8 +1,12 @@
 # go-reveal
 
-Turn [Reveal](https://github.com/hakimel/reveal.js) presentations into shared events.
+## [**Try it out**](http://gordienoye.github.io/go-reveal/)
 
-### Here is what you need to do--not much
+Want to see how a sample Reveal.js presentation works with go-reveal?
+[**Check out**](http://gordienoye.github.io/go-reveal/) how adding one line of HTML allows multiple browsers to
+share and control your presentation.
+
+### Want to make *your* Reveal.js presentation multi-user?
 
 Your [Reveal](https://github.com/hakimel/reveal.js) presentation will be a web page with the Reveal scripts added at the bottom of the HTML `</body>` tag.
 It should look something like this:
@@ -36,12 +40,6 @@ All you have to do is add in the go-reveal script and you will now be able to co
 		</script>
 	</body>
 ```
-
-### [**Try it out**](http://gordienoye.github.io/go-reveal/)
-
-Want to see how a sample Reveal.js presentation works with go-reveal?
-[**Check out**](http://gordienoye.github.io/go-reveal/) how adding one line of HTML allows multiple browsers to
-share and control your presentation.
 
 ### Collaborating is now easy
 
