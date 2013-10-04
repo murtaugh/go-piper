@@ -1,32 +1,29 @@
 var goreveal = (function() {
 
-  var GO_REVEAL_APP_URL = 'https://goinstant.net/elgordo/GoReveal';
-  var PLATFORM_URL = 'https://cdn.goinstant.net/v1/platform.min.js';
+  var ASYNC_URL = 'http://cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min.js';
+  var GO_REVEAL_APP = 'https://goinstant.net/elgordo/GoReveal';
+
+  var RESOURCES = [
+    ['https://cdn.goinstant.net/v1/platform.min.js', 'goinstant'],  //PLATFORM
+    ['https://cdn.goinstant.net/widgets/user-list/latest/user-list.min.js', 'goinstant.widgets.UserList'],  // USER_LIST
+    ['https://cdn.goinstant.net/widgets/click-indicator/latest/click-indicator.min.js', 'goinstant.widgets.ClickIndicator'],  // CLICK_INDICATOR
+    ['https://cdn.goinstant.net/widgets/user-colors/latest/user-colors.min.js', 'goinstant.widgets.UserColors'],  // USER_COLORS
+    ['https://cdn.goinstant.net/widgets/notifications/latest/notifications.min.js', 'goinstant.widgets.Notifications']  // NOTIFICATIONS
+  ];
+
   var ORIGIN_GO_REVEAL = 'goreveal';
   var GO_REVEAL_ID = 'go_reveal_room';
+  var GO_REVEAL_USER_NAME = 'go_reveal_user_name';
   var QUERY_REGEX = new RegExp('\\?(.*)\\b' + GO_REVEAL_ID + '=([^&#\/]*)(.*)');
 
 
-  var platform;
   var roomName;
+  var userName;
+  var alreadyLoaded;
   var presentation;
   var slide;
   var query;
 
-
-  function loadScript(url, callback) {
-    // Adding the script tag to the head as suggested before
-    var head = document.getElementsByTagName('head')[0];
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = url;
-
-    script.onreadystatechange = callback;
-    script.onload = callback;
-
-    // Fire the loading
-    head.appendChild(script);
-  }
 
   function _handleDisplayEvent(evt) {
     // do not forward the change to be shared if there is nowhere to share the
@@ -128,25 +125,109 @@ var goreveal = (function() {
     addShareButton(parser.href);
   }
 
-  function connectToPlatform() {
-    loadScript(PLATFORM_URL, function() {
+  function getUserName(cb) {
+    userName = sessionStorage.getItem(GO_REVEAL_USER_NAME);
+    if (userName) {
+      alreadyLoaded = true;
+      return cb();
+    }
 
-      platform = new goinstant.Platform(GO_REVEAL_APP_URL);
-      platform.connect(function (err) {
-        if (err) {
-          throw err;
+    userName = prompt("What is your name?");
+    if (!userName) {
+      userName = 'Guest';
+    }
+    sessionStorage.setItem(GO_REVEAL_USER_NAME, userName);
+
+    return cb();
+  }
+
+  function connectToPlatform(cb) {
+    var platform = new goinstant.Platform(GO_REVEAL_APP);
+    var notifications;
+
+    async.series([
+      // get the display name from the user.
+      getUserName,
+
+      // connect to GoInstant platform
+      platform.connect.bind(platform),
+
+      // create (if needed) the room instance for the presentation and
+      // join the room and gain access to the presentation stat information
+      function(next) {
+        presentation = platform.room(roomName);
+        presentation.join(next);
+      },
+
+      // subscribe to any notifications in the presentaiton room.
+      function(next) {
+        notifications = new goinstant.widgets.Notifications();
+        notifications.subscribe(presentation, next);
+      },
+
+      // set up the user's display name
+      function(next) {
+        if (alreadyLoaded) {
+          return next();
         }
 
-        presentation = platform.room(roomName);
-        presentation.join(function (err) {
+        var publishOpts = {
+          room: presentation,
+          type: 'success',
+          message: userName + ' has joined.'
+        };
+
+        presentation.user(function(err, user, userKey) {
           if (err) {
-            throw err;
+            return next(err);
           }
 
-          initializeSharing();
+          var displayNameKey = userKey.key('displayName');
+          displayNameKey.set(userName, function(err) {
+            if (err) {
+              return next(err);
+            }
+
+            // publish a notification of the new user
+            notifications.publish(publishOpts, next);
+          });
         });
-      });
-    });
+      },
+
+      // select a colour for the current user
+      function(next) {
+        var opts = {
+          room: presentation
+        };
+
+        var userColors = new goinstant.widgets.UserColors(opts);
+        userColors.choose(next);
+      },
+
+      // initialize the user list
+      function(next) {
+        var opts = {
+          room: presentation,
+          position: 'left'
+        };
+
+        var userList = new goinstant.widgets.UserList(opts);
+        userList.initialize(next);
+      },
+
+      // initialize the clicking indicator
+      function(next) {
+        var opts = {
+          room: presentation
+        };
+
+        var clickIndicator = new goinstant.widgets.ClickIndicator(opts);
+        clickIndicator.initialize(next);
+      },
+
+      // initialize the sharing of the state of the presentation.
+      initializeSharing
+    ], cb);
   }
 
   function setRoomName() {
@@ -199,11 +280,58 @@ var goreveal = (function() {
     return true;
   }
 
-  function initialize() {
-    if (setRoomName()) {
-      addListeners();
+  function loadResources(cb) {
+    function loadScript(url, testProperty, loaded) {
+      // if the object exists then just return, no need to reload.
+      if (window[testProperty]) {
+        return loaded();
+      }
 
-      connectToPlatform();
+      // Adding the script tag to the head as suggested before
+      var head = document.getElementsByTagName('head')[0];
+      var script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = url;
+
+      // callbacks for loaded notification
+      function _handleLoadEvent() {
+        return loaded();
+      }
+
+      script.onreadystatechange = _handleLoadEvent;
+      script.onload = _handleLoadEvent;
+
+      // Fire the loading
+      head.appendChild(script);
+    }
+
+    // get async if it does not already exist.
+    loadScript(ASYNC_URL, 'async', function() {
+
+      // Load all the resources in the array. Create the array of resoures
+      // to load and then load each.
+      var loadRequests = [];
+      async.each(RESOURCES, function(params, next) {
+        loadRequests.push(loadScript.bind(null, params[0], params[1]));
+        return next();
+      }, function (err) {
+        async.series(loadRequests, cb);
+      });
+    });
+  }
+
+  function initialize() {
+    // we might have to reload if the we are passed a room name so do not
+    // load the rest of the resources if the page is being reloaded.
+    if (setRoomName()) {
+      loadResources(function() {
+
+        // set up listeners on the presentation
+        addListeners();
+
+        // set up sharing and components.
+        connectToPlatform();
+      });
     }
   }
 
