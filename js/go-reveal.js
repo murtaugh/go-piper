@@ -28,32 +28,6 @@ var goreveal = (function() {
     head.appendChild(script);
   }
 
-  function _handleDocumentKeyDown(evt) {
-    // Check for element that has focus
-    var activeElement = document.activeElement;
-    var hasFocus = !!(document.activeElement && (
-      document.activeElement.type ||
-      document.activeElement.href ||
-      document.activeElement.contentEditable !== 'inherit'
-    ));
-
-    if (!hasFocus && event.keyCode === 71 && event.ctrlKey) {
-      var parser = document.createElement('a');
-      parser.href = window.location.toString();
-
-      // if the query has changed then reload the page with the new query.
-      if (parser.search) {
-        parser.search += '&' + GO_REVEAL_ID + '=' + roomName;
-      } else {
-        parser.search = '?' + GO_REVEAL_ID + '=' + roomName;
-      }
-
-      alert('Your sharing URL is:\n\n' + parser.href);
-    }
-
-    return false;
-  }
-
   function _handleDisplayEvent(evt) {
     // do not forward the change to be shared if there is nowhere to share the
     // value to or if this event is triggered from our response to an update
@@ -70,8 +44,6 @@ var goreveal = (function() {
     Reveal.addEventListener('slidechanged', _handleDisplayEvent);
     Reveal.addEventListener('fragmentshown', _handleDisplayEvent);
     Reveal.addEventListener('fragmenthidden', _handleDisplayEvent);
-
-    document.addEventListener('keydown', _handleDocumentKeyDown, false);
   }
 
   function _handleDisplayChanged(value, context) {
@@ -89,6 +61,47 @@ var goreveal = (function() {
     }
   }
 
+  function addShareButton(text) {
+    var shareBtn = document.createElement('div');
+    var cssBtn = 'display: block; position: fixed; bottom: 1em; left: 0; ' +
+      'z-index: 9999; height: 17px; padding: 9px; font-size: 15px; ' +
+      'font-family: sans-serif; font-weight: bold; background: white; ' +
+      'border-radius: 0 3px 3px 0; border: 1px solid #ccc; ' +
+      'text-decoration: none; color: #15A815;';
+    var cssURL = 'font-weight: regular;';
+
+    shareBtn.innerHTML = 'Share';
+    shareBtn.style.cssText = cssBtn;
+
+    var slides = document.getElementsByClassName('slides')[0];
+    slides.parentNode.insertBefore(shareBtn, slides);
+
+    shareBtn.onmouseover = function() {
+      if (this.poppedOut) {
+        return;
+      }
+      this.poppedOut = true;
+
+      this.innerHTML +=
+        '<input id="gi-share-text" type="text" value="' + text +
+        '" style="margin: -5px 0 0 15px; padding: 5px; width: 180px;"/>';
+
+      this.style.width = '250px';
+      document.getElementById('gi-share-text')select();
+    };
+
+    shareBtn.onmouseout = function(evt) {
+      if (evt.relatedTarget && evt.relatedTarget.id === 'gi-share-text') {
+        return;
+      }
+      this.poppedOut = false;
+
+      this.innerHTML = 'Share';
+      this.style.width = 'auto';
+    };
+
+  }
+
   function initializeSharing() {
     slide = presentation.key('slide');
     slide.on('set', _handleDisplayChanged);
@@ -102,10 +115,21 @@ var goreveal = (function() {
     var parser = document.createElement('a');
     parser.href = window.location.toString();
     query.set(parser.search);
+
+    // Create the sharing URL by adding the roomName as a query parameter to
+    // the current window.location.
+    if (parser.search) {
+      parser.search += '&' + GO_REVEAL_ID + '=' + roomName;
+    } else {
+      parser.search = '?' + GO_REVEAL_ID + '=' + roomName;
+    }
+
+    // Create Share Button
+    addShareButton(parser.href);
   }
 
   function connectToPlatform() {
-    loadScript(PLATFORM_URL, function() {;
+    loadScript(PLATFORM_URL, function() {
 
       platform = new goinstant.Platform(GO_REVEAL_APP_URL);
       platform.connect(function (err) {
