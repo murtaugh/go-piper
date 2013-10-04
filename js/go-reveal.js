@@ -87,7 +87,7 @@ var goreveal = (function() {
         '" style="margin: -5px 0 0 15px; padding: 5px; width: 180px;"/>';
 
       this.style.width = '250px';
-      document.getElementById('gi-share-text')select();
+      document.getElementById('gi-share-text').select();
     };
 
     shareBtn.onmouseout = function(evt) {
