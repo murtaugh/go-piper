@@ -52,3 +52,8 @@ Once you share this URL with somebody, that person can control your presentation
 You can share presenting duties with as many other people as you want.
 
 Go wild.
+
+### go-reveal is powered by GoInstant
+
+<a href="http://goinstant.com">;GoInstant</a>; is an API for integrating realtime, multi-user functionality into your app. You can check it out and sign up for free.
+
