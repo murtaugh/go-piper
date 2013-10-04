@@ -138,7 +138,7 @@ var goreveal = (function() {
       return cb();
     }
 
-    userName = prompt("What is your name?");
+    userName = prompt('What is your name?', 'Guest');
     if (!userName) {
       userName = 'Guest';
     }
