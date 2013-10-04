@@ -37,6 +37,11 @@ All you have to do is add in the go-reveal script and you will now be able to co
 	</body>
 ```
 
+### Try it out
+
+If you want to see how the sample Reveal.js presentation works with go-reveal?
+[Try it out](http://gordienoye.github.io/go-reveal/) and see how you can share presenting between multiple browsers.
+
 ### Collaborating is now easy
 
 go-reveal automatically makes your presentation multi-user. If you want to give another person access to your
