@@ -1,7 +1,7 @@
 var goreveal = (function() {
 
   var ASYNC_URL = 'http://cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min.js';
-  var GO_REVEAL_APP = 'https://goinstant.net/elgordo/GoReveal';
+  var GO_REVEAL_APP = 'https://goinstant.net/GoReveal/GoReveal';
 
   var SCRIPT_URLS = [
     ['https://cdn.goinstant.net/v1/platform.min.js', 'goinstant'],  //PLATFORM
