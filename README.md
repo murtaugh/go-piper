@@ -60,3 +60,10 @@ Go wild.
 <a href="http://goinstant.com">GoInstant</a> is an API for integrating realtime, multi-user functionality into your app.
 You can check it out and <a href="https://goinstant.com/signup">sign up for free</a>.
 
+### License
+
+MIT licensed
+
+Copyright (C) 2013 Gordie Noye
+
+
