@@ -148,18 +148,22 @@ var goreveal = (function() {
   }
 
   function connectToPlatform(cb) {
-    var platform = new goinstant.Platform(GO_REVEAL_APP);
     var notifications;
 
     async.series([
-      // connect to GoInstant platform
-      platform.connect.bind(platform),
-
-      // create (if needed) the room instance for the presentation and
-      // join the room and gain access to the presentation stat information
+      // connect to GoInstant
       function(next) {
-        presentation = platform.room(roomName);
-        presentation.join(next);
+        var connOpts = {
+          room: roomName
+        };
+        goinstant.connect(GO_REVEAL_APP, connOpts, function(err, conn, room) {
+          if (err) {
+            return next(err);
+          }
+          presentation = room;
+
+          next();
+        });
       },
 
       // subscribe to any notifications in the presentaiton room.
