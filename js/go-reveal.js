@@ -1,7 +1,7 @@
-var goreveal = (function() {
+var gopiper = (function() {
 
   var ASYNC_URL = 'http://cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min.js';
-  var GO_REVEAL_APP = 'https://goinstant.net/GoReveal/GoReveal';
+  var GO_PIPER_APP = 'https://goinstant.net/murtaugh/Piper_Alpha';
 
   var SCRIPT_URLS = [
     ['https://cdn.goinstant.net/v1/platform.min.js', 'goinstant'],  //PLATFORM
@@ -11,16 +11,10 @@ var goreveal = (function() {
     ['https://cdn.goinstant.net/widgets/notifications/latest/notifications.min.js', 'goinstant.widgets.Notifications']  // NOTIFICATIONS
   ];
 
-  var CSS_URLS = [
-    'https://cdn.goinstant.net/widgets/user-list/latest/user-list.css',
-    'https://cdn.goinstant.net/widgets/click-indicator/latest/click-indicator.css',
-    'https://cdn.goinstant.net/widgets/notifications/latest/notifications.css'
-  ];
-
-  var ORIGIN_GO_REVEAL = 'goreveal';
-  var GO_REVEAL_ID = 'go_reveal_room';
-  var GO_REVEAL_USER_NAME = 'go_reveal_user_name';
-  var QUERY_REGEX = new RegExp('\\?(.*)\\b' + GO_REVEAL_ID + '=([^&#\/]*)(.*)');
+  var ORIGIN_GO_PIPER = 'gopiper';
+  var GO_PIPER_ID = 'go_piper_room';
+  var GO_PIPER_USER_NAME = 'GO_PIPER_USER_NAME';
+  var QUERY_REGEX = new RegExp('\\?(.*)\\b' + GO_PIPER_ID + '=([^&#\/]*)(.*)');
 
 
   var roomName;
@@ -35,22 +29,22 @@ var goreveal = (function() {
     // do not forward the change to be shared if there is nowhere to share the
     // value to or if this event is triggered from our response to an update
     // from the sharing server.
-    if (!slide || evt.origin === ORIGIN_GO_REVEAL) {
+    if (!slide || evt.origin === ORIGIN_GO_PIPER) {
       return;
     }
 
-    var val = Reveal.getIndices();
+    var val = Piper.getIndices();
     slide.set(val);
   }
 
   function addListeners() {
-    Reveal.addEventListener('slidechanged', _handleDisplayEvent);
-    Reveal.addEventListener('fragmentshown', _handleDisplayEvent);
-    Reveal.addEventListener('fragmenthidden', _handleDisplayEvent);
+    Piper.addEventListener('slidechanged', _handleDisplayEvent);
+    Piper.addEventListener('fragmentshown', _handleDisplayEvent);
+    Piper.addEventListener('fragmenthidden', _handleDisplayEvent);
   }
 
   function _handleDisplayChanged(value, context) {
-    Reveal.slide(value.h, value.v, value.f, ORIGIN_GO_REVEAL);
+    Piper.slide(value.h, value.v, value.f, ORIGIN_GO_PIPER);
   }
 
   function _handleQueryChanged(value, context) {
@@ -122,9 +116,9 @@ var goreveal = (function() {
     // Create the sharing URL by adding the roomName as a query parameter to
     // the current window.location.
     if (parser.search) {
-      parser.search += '&' + GO_REVEAL_ID + '=' + roomName;
+      parser.search += '&' + GO_PIPER_ID + '=' + roomName;
     } else {
-      parser.search = '?' + GO_REVEAL_ID + '=' + roomName;
+      parser.search = '?' + GO_PIPER_ID + '=' + roomName;
     }
 
     // Create Share Button
@@ -132,7 +126,7 @@ var goreveal = (function() {
   }
 
   function getUserName() {
-    userName = sessionStorage.getItem(GO_REVEAL_USER_NAME);
+    userName = sessionStorage.getItem(GO_PIPER_USER_NAME);
     if (userName) {
       alreadyLoaded = true;
       return;
@@ -142,7 +136,7 @@ var goreveal = (function() {
     if (!userName) {
       userName = 'Guest';
     }
-    sessionStorage.setItem(GO_REVEAL_USER_NAME, userName);
+    sessionStorage.setItem(GO_PIPER_USER_NAME, userName);
 
     return;
   }
@@ -156,7 +150,7 @@ var goreveal = (function() {
         var connOpts = {
           room: roomName
         };
-        goinstant.connect(GO_REVEAL_APP, connOpts, function(err, conn, room) {
+        goinstant.connect(GO_PIPER_APP, connOpts, function(err, conn, room) {
           if (err) {
             return next(err);
           }
@@ -184,7 +178,8 @@ var goreveal = (function() {
           message: userName + ' has joined.'
         };
 
-        presentation.user(function(err, user, userKey) {
+        var userKey = presentation.self();
+        userKey.get(function(err, user) {
           if (err) {
             return next(err);
           }
@@ -238,9 +233,9 @@ var goreveal = (function() {
   }
 
   function setRoomName() {
-    // if we have the go-reveal room in sessionStorage then just connect to
+    // if we have the go-piper room in sessionStorage then just connect to
     // the room and continue with the initialization.
-    roomName = sessionStorage.getItem(GO_REVEAL_ID);
+    roomName = sessionStorage.getItem(GO_PIPER_ID);
     if (roomName) {
       return true;
     }
@@ -258,9 +253,9 @@ var goreveal = (function() {
     if (roomId) {
       roomName = roomId.toString();
       // add the cookie to the document.
-      sessionStorage.setItem(GO_REVEAL_ID, roomName);
+      sessionStorage.setItem(GO_PIPER_ID, roomName);
 
-      // regenerate the URI without the go-reveal query parameter and reload
+      // regenerate the URI without the go-piper query parameter and reload
       // the page with the new URI.
       var beforeRoom = hasRoom[1];
       if (beforeRoom[beforeRoom.length - 1] === '&') {
@@ -282,7 +277,7 @@ var goreveal = (function() {
     // room and set the cookie in case of future refreshes.
     var id = Math.floor(Math.random() * Math.pow(2, 32));
     roomName = id.toString();
-    sessionStorage.setItem(GO_REVEAL_ID, roomName);
+    sessionStorage.setItem(GO_PIPER_ID, roomName);
 
     return true;
   }
@@ -332,14 +327,6 @@ var goreveal = (function() {
           }, next);
         },
 
-        // add function calls to load all css to the load requests array
-        function(next) {
-          async.each(CSS_URLS, function(url, cont) {
-            loadRequests.push(_loadResource.bind(null, 'link', url, null));
-            return cont();
-          }, next);
-        },
-
         async.series.bind(async, loadRequests)
       ], cb);
     });
@@ -368,4 +355,4 @@ var goreveal = (function() {
   };
 })();
 
-goreveal.initialize();
+gopiper.initialize();
